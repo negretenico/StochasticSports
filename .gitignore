@@ -1,0 +1,51 @@
+# Claude Code local settings
+.claude/settings.local.json
+
+# Environment & secrets
+.env
+.env.*
+*.key
+secrets.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Node
+node_modules/
+.npm/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs & temp
+*.log
+*.tmp
+
+# Teach skill — generated lessons and learning records are local to each session
+.claude/skills/teach/lessons/
+.claude/skills/teach/learning-records/
+.claude/skills/teach/assets/
+.claude/skills/teach/MISSION.md
+.claude/skills/teach/RESOURCES.md
+.claude/skills/teach/NOTES.md
