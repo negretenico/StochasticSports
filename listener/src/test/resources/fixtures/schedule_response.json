@@ -1,0 +1,58 @@
+{
+  "totalItems": 3,
+  "dates": [
+    {
+      "date": "2026-07-04",
+      "games": [
+        {
+          "gamePk": 747175,
+          "gameDate": "2026-07-04T17:10:00Z",
+          "status": {
+            "abstractGameState": "Live",
+            "detailedState": "In Progress"
+          },
+          "teams": {
+            "away": {
+              "team": { "id": 147, "name": "New York Yankees" }
+            },
+            "home": {
+              "team": { "id": 111, "name": "Boston Red Sox" }
+            }
+          }
+        },
+        {
+          "gamePk": 747201,
+          "gameDate": "2026-07-04T20:05:00Z",
+          "status": {
+            "abstractGameState": "Preview",
+            "detailedState": "Scheduled"
+          },
+          "teams": {
+            "away": {
+              "team": { "id": 117, "name": "Houston Astros" }
+            },
+            "home": {
+              "team": { "id": 119, "name": "Los Angeles Dodgers" }
+            }
+          }
+        },
+        {
+          "gamePk": 747099,
+          "gameDate": "2026-07-04T13:05:00Z",
+          "status": {
+            "abstractGameState": "Final",
+            "detailedState": "Final"
+          },
+          "teams": {
+            "away": {
+              "team": { "id": 136, "name": "Seattle Mariners" }
+            },
+            "home": {
+              "team": { "id": 138, "name": "St. Louis Cardinals" }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
