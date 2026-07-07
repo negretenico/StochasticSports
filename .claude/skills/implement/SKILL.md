@@ -6,9 +6,9 @@ disable-model-invocation: true
 
 Implement the work described by the user in the PRD or issues.
 
-Use /tdd where possible, at pre-agreed seams.
+Use /tdd at pre-agreed seams. TDD is mandatory — write the failing test first, then the implementation.
 
-Run typechecking regularly, single test files regularly, and the full test suite once at the end.
+Run single test files regularly during the loop, and the full test suite once at the end.
 
 Once done, use /code-review to review the work.
 

@@ -45,6 +45,20 @@ Articles in `docs/articles/` inform the modeling approach:
 - Sports arbitrage detection
 - Win strength measurement for MLB (Elo-style ratings)
 
+## Languages
+
+This is a polyglot project:
+- **Java / Spring Boot** — services requiring low latency or strong typing (Kafka consumers, risk/execution layer)
+- **Python** — data ingestion, analytics, and modeling (MLB Stats API polling, Elo ratings, arbitrage detection)
+
+## Coding Conventions
+
+Convention skills are in `.claude/skills/`. Always load the relevant skill before writing or reviewing code in that language.
+
+- **Java:** `/java` — Optional (return types only, monadic consumption), streams over loops, records over classes, unchecked custom exceptions, minimal try scope
+- **Spring Boot:** `/spring-boot` — constructor injection (max 2–3 deps), `@ConfigurationProperties` with records, `@ControllerAdvice` for REST errors, `DefaultErrorHandler` for Kafka, domain-based packaging, config-file profiles only
+- **TDD:** `/tdd` — mandatory for all implementation work. Write the failing test first, then the implementation. Never write code without a failing test driving it.
+
 ## Build System
 
 The Makefile is currently empty. As the project grows, add targets here for running ingestion services, tests, and linting.
