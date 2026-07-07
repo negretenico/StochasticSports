@@ -1,7 +1,7 @@
 ---
 name: planning
 description: Shapes work into actionable issues. Use this agent when you have an idea, feature request, or vague goal that needs to be defined and broken into issues. It grills the proposal into something crisp, produces a PRD, then breaks it into vertical slice issues ready for implementation.
-tools: Read, Grep, Glob, WebFetch, WebSearch
+tools: Read, Grep, Glob, WebFetch, WebSearch, Bash
 model: inherit
 skills:
   - grilling
