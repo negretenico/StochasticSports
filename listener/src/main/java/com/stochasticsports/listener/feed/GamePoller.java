@@ -45,12 +45,19 @@ public class GamePoller {
 
     public void poll() {
         try {
-            var feed      = feedClient.fetch(gamePk, currentState.lastTimecode());
+            var feed = feedClient.fetch(gamePk, currentState.lastTimecode());
+
+            // Emit first using currentState so lastAtBatIndex is correct for dedup.
+            // Returns the new max atBatIndex after emission.
+            int newLastAtBatIndex = currentState.emitEvents(feed, producer);
+
+            // Transition, then patch the updated atBatIndex into the next LiveState.
             var nextState = currentState.transition(feed);
+            if (nextState instanceof LiveState ls) {
+                nextState = new LiveState(ls.gamePk(), ls.lastTimecode(), newLastAtBatIndex);
+            }
 
             boolean typeChanged = !nextState.getClass().equals(currentState.getClass());
-            currentState = nextState;
-
             if (typeChanged) {
                 future.cancel(false);
 
@@ -67,7 +74,7 @@ public class GamePoller {
                 }
             }
 
-            currentState.emitEvents(feed, producer);
+            currentState = nextState;
 
         } catch (Exception e) {
             log.error("Poll error for gamePk={}: {}", gamePk, e.getMessage(), e);

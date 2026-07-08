@@ -1,16 +1,20 @@
 package com.stochasticsports.listener.config;
 
 import com.stochasticsports.listener.feed.FeedClient;
+import com.stochasticsports.listener.feed.GamePollerFactory;
 import com.stochasticsports.listener.game.GameDiscoveryService;
 import com.stochasticsports.listener.game.GameScheduleClient;
 import com.stochasticsports.listener.event.EventProducer;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Main wiring configuration for the listener module.
@@ -21,14 +25,8 @@ import java.util.concurrent.ScheduledExecutorService;
 @EnableConfigurationProperties(ListenerProperties.class)
 public class ListenerConfig {
 
-    private final ListenerProperties props;
-
-    public ListenerConfig(ListenerProperties props) {
-        this.props = props;
-    }
-
     @Bean
-    public WebClient mlbWebClient() {
+    public WebClient mlbWebClient(ListenerProperties props) {
         return WebClient.builder()
                 .baseUrl(props.mlbApiBaseUrl())
                 .build();
@@ -46,17 +44,42 @@ public class ListenerConfig {
 
     @Bean
     public ScheduledExecutorService gamePollerScheduler() {
-        // virtual threads (Java 21) for lightweight per-game scheduling
-        return Executors.newScheduledThreadPool(
-                Runtime.getRuntime().availableProcessors() * 2);
+        return Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+    }
+
+    @Bean
+    public GamePollerFactory gamePollerFactory(
+            FeedClient feedClient,
+            EventProducer producer,
+            ScheduledExecutorService gamePollerScheduler) {
+        return new GamePollerFactory(feedClient, producer, gamePollerScheduler);
     }
 
     @Bean
     public GameDiscoveryService gameDiscoveryService(
             GameScheduleClient scheduleClient,
-            FeedClient feedClient,
-            EventProducer producer,
-            ScheduledExecutorService gamePollerScheduler) {
-        return new GameDiscoveryService(scheduleClient, feedClient, producer, gamePollerScheduler, props);
+            GamePollerFactory gamePollerFactory,
+            ListenerProperties props) {
+        return new GameDiscoveryService(scheduleClient, gamePollerFactory, props);
+    }
+
+    /**
+     * Runs discovery immediately on startup, then re-schedules every discoveryIntervalSeconds.
+     * Keeps @Scheduled out of domain classes. Skipped in the test profile.
+     */
+    @Bean
+    @Profile("!test")
+    public ApplicationRunner discoveryRunner(
+            GameDiscoveryService gameDiscoveryService,
+            ScheduledExecutorService gamePollerScheduler,
+            ListenerProperties props) {
+        return args -> {
+            gameDiscoveryService.discoverAndRegister();
+            gamePollerScheduler.scheduleWithFixedDelay(
+                    gameDiscoveryService::discoverAndRegister,
+                    props.discoveryIntervalSeconds(),
+                    props.discoveryIntervalSeconds(),
+                    TimeUnit.SECONDS);
+        };
     }
 }

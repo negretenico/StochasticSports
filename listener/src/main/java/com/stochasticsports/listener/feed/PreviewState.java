@@ -40,8 +40,8 @@ public record PreviewState(int gamePk) implements MlbGameState {
     }
 
     @Override
-    public void emitEvents(Map<String, Object> feed, EventProducer producer) {
-        // no-op: game has not started
+    public int emitEvents(Map<String, Object> feed, EventProducer producer) {
+        return -1; // no-op: game has not started
     }
 
     @SuppressWarnings("unchecked")

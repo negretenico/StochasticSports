@@ -33,7 +33,7 @@ public sealed interface MlbGameState permits PreviewState, LiveState, FinalState
 
     /**
      * Emits normalized events from the feed to the producer.
-     * No-op in Preview; emits completed at-bats in Live.
+     * Returns the new max atBatIndex after emission (unchanged in Preview/Final).
      */
-    void emitEvents(Map<String, Object> feed, EventProducer producer);
+    int emitEvents(Map<String, Object> feed, EventProducer producer);
 }

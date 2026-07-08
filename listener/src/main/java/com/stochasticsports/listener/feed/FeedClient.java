@@ -2,7 +2,9 @@ package com.stochasticsports.listener.feed;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,6 +40,7 @@ public class FeedClient {
 
         return spec.retrieve()
                 .bodyToMono(Map.class)
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(1)).maxBackoff(Duration.ofSeconds(60)))
                 .doOnError(e -> log.error("Failed to fetch feed for gamePk={}: {}", gamePk, e.getMessage()))
                 .block();
     }

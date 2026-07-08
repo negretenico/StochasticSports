@@ -48,9 +48,13 @@ public record LiveState(int gamePk, String lastTimecode, int lastAtBatIndex) imp
     }
 
     @Override
-    public void emitEvents(Map<String, Object> feed, EventProducer producer) {
-        Normalizer.normalize(feed, lastAtBatIndex)
-                .forEach(producer::send);
+    public int emitEvents(Map<String, Object> feed, EventProducer producer) {
+        var events = Normalizer.normalize(feed, lastAtBatIndex);
+        events.forEach(producer::send);
+        return events.stream()
+                .mapToInt(e -> Integer.parseInt(e.eventId().substring(e.eventId().lastIndexOf('_') + 1)))
+                .max()
+                .orElse(lastAtBatIndex);
     }
 
     @SuppressWarnings("unchecked")

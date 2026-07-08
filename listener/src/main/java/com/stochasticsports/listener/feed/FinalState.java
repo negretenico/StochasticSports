@@ -31,7 +31,7 @@ public record FinalState(int gamePk) implements MlbGameState {
     }
 
     @Override
-    public void emitEvents(Map<String, Object> feed, EventProducer producer) {
-        // no-op: game is over
+    public int emitEvents(Map<String, Object> feed, EventProducer producer) {
+        return -1; // no-op: game is over
     }
 }
