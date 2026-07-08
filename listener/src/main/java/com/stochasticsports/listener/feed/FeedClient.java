@@ -5,7 +5,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -26,20 +25,18 @@ public class FeedClient {
      *
      * @param gamePk    MLB game primary key
      * @param timecode  Last-seen timecode in YYYYMMDD_HHMMSS format, or null for first poll
-     * @return Raw feed as a nested Map (caller drives state machine)
+     * @return Typed feed response deserialized by Jackson
      */
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> fetch(int gamePk, String timecode) {
-        var spec = webClient.get()
+    public MlbFeedResponse fetch(int gamePk, String timecode) {
+        return webClient.get()
                 .uri(uriBuilder -> {
                     var builder = uriBuilder.path("/game/{pk}/feed/live");
                     Optional.ofNullable(timecode)
                             .ifPresent(tc -> builder.queryParam("timecode", tc));
                     return builder.build(gamePk);
-                });
-
-        return spec.retrieve()
-                .bodyToMono(Map.class)
+                })
+                .retrieve()
+                .bodyToMono(MlbFeedResponse.class)
                 .retryWhen(Retry.backoff(3, Duration.ofSeconds(1)).maxBackoff(Duration.ofSeconds(60)))
                 .doOnError(e -> log.error("Failed to fetch feed for gamePk={}: {}", gamePk, e.getMessage()))
                 .block();

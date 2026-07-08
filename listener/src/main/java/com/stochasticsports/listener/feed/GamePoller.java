@@ -48,13 +48,17 @@ public class GamePoller {
             var feed = feedClient.fetch(gamePk, currentState.lastTimecode());
 
             // Emit first using currentState so lastAtBatIndex is correct for dedup.
-            // Returns the new max atBatIndex after emission.
-            int newLastAtBatIndex = currentState.emitEvents(feed, producer);
+            // Returns the new max atBatIndex after emission (or -1 for non-Live states).
+            int newLastAtBatIndex = switch (currentState) {
+                case LiveState ls -> ls.emit(feed, producer);
+                case PreviewState p -> -1;
+                case FinalState f -> -1;
+            };
 
             // Transition, then patch the updated atBatIndex into the next LiveState.
             var nextState = currentState.transition(feed);
             if (nextState instanceof LiveState ls) {
-                nextState = new LiveState(ls.gamePk(), ls.lastTimecode(), newLastAtBatIndex);
+                nextState = ls.withLastAtBatIndex(newLastAtBatIndex);
             }
 
             boolean typeChanged = !nextState.getClass().equals(currentState.getClass());
@@ -76,7 +80,9 @@ public class GamePoller {
 
             currentState = nextState;
 
-        } catch (Exception e) {
+        } catch (org.springframework.web.reactive.function.client.WebClientException e) {
+            log.error("HTTP error polling gamePk={}: {}", gamePk, e.getMessage());
+        } catch (RuntimeException e) {
             log.error("Poll error for gamePk={}: {}", gamePk, e.getMessage(), e);
         }
     }

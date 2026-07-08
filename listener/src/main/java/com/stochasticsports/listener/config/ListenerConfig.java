@@ -9,7 +9,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.concurrent.Executors;
@@ -65,10 +64,9 @@ public class ListenerConfig {
 
     /**
      * Runs discovery immediately on startup, then re-schedules every discoveryIntervalSeconds.
-     * Keeps @Scheduled out of domain classes. Skipped in the test profile.
+     * Keeps @Scheduled out of domain classes.
      */
     @Bean
-    @Profile("!test")
     public ApplicationRunner discoveryRunner(
             GameDiscoveryService gameDiscoveryService,
             ScheduledExecutorService gamePollerScheduler,

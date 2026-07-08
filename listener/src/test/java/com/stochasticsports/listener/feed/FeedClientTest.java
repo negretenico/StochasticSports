@@ -1,6 +1,5 @@
 package com.stochasticsports.listener.feed;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -12,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -78,10 +76,11 @@ class FeedClientTest {
                 .setBody(fixtureBody)
                 .addHeader("Content-Type", "application/json"));
 
-        Map<String, Object> feed = feedClient.fetch(747175, null);
+        MlbFeedResponse feed = feedClient.fetch(747175, null);
 
-        assertThat(feed).containsKey("gameData");
-        assertThat(feed).containsKey("liveData");
-        assertThat(feed).containsKey("metaData");
+        assertThat(feed.metaData().timeStamp()).isEqualTo("20260704_175655");
+        assertThat(feed.metaData().waitSeconds()).isEqualTo(10);
+        assertThat(feed.gameData().game().pk()).isEqualTo(747175);
+        assertThat(feed.liveData().plays().allPlays()).hasSize(2);
     }
 }

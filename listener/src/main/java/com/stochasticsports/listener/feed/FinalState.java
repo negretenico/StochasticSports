@@ -1,9 +1,6 @@
 package com.stochasticsports.listener.feed;
 
-import com.stochasticsports.listener.event.EventProducer;
-
 import java.time.Duration;
-import java.util.Map;
 
 /**
  * A completed game. Terminal state — never re-scheduled.
@@ -26,12 +23,7 @@ public record FinalState(int gamePk) implements MlbGameState {
     }
 
     @Override
-    public MlbGameState transition(Map<String, Object> feed) {
+    public MlbGameState transition(MlbFeedResponse feed) {
         return this;
-    }
-
-    @Override
-    public int emitEvents(Map<String, Object> feed, EventProducer producer) {
-        return -1; // no-op: game is over
     }
 }

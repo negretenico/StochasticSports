@@ -3,7 +3,7 @@ package com.stochasticsports.listener.feed;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.util.Map;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,13 +48,8 @@ class LiveStateTest {
     @Test
     void pollInterval_defaultsTo10Seconds_whenMetaDataWaitAbsent() {
         var state = new LiveState(747175, "20260704_170000", 0);
-        var feed = Map.<String, Object>of(
-                "gameData", Map.of(
-                        "status", Map.of("abstractGameState", "Live")
-                ),
-                "metaData", Map.of("timeStamp", "20260704_175655")
-                // no "wait" key
-        );
+        // wait = 0 simulates the field being absent (int defaults to 0)
+        var feed = feedWithState("Live", "20260704_175655", 0);
 
         assertThat(state.pollIntervalFromFeed(feed)).isEqualTo(Duration.ofSeconds(10));
     }
@@ -72,15 +67,20 @@ class LiveStateTest {
     }
 
     // helper
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> feedWithState(String abstractGameState, String timestamp, int wait) {
-        return Map.of(
-                "gameData", Map.of(
-                        "status", Map.of("abstractGameState", abstractGameState)
+    private MlbFeedResponse feedWithState(String abstractGameState, String timestamp, int wait) {
+        return new MlbFeedResponse(
+                new MlbFeedResponse.MetaData(timestamp, wait),
+                new MlbFeedResponse.GameData(
+                        new MlbFeedResponse.GameData.Game(747175),
+                        new MlbFeedResponse.GameData.Datetime("2026-07-04"),
+                        new MlbFeedResponse.GameData.Status(abstractGameState),
+                        new MlbFeedResponse.GameData.Teams(
+                                new MlbFeedResponse.GameData.Teams.Team(111, "Boston Red Sox"),
+                                new MlbFeedResponse.GameData.Teams.Team(147, "New York Yankees")
+                        )
                 ),
-                "metaData", Map.of(
-                        "timeStamp", timestamp,
-                        "wait", wait
+                new MlbFeedResponse.LiveData(
+                        new MlbFeedResponse.LiveData.Plays(List.of())
                 )
         );
     }

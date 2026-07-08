@@ -1,3 +1,6 @@
+build:
+	cd listener && mvn package -DskipTests
+
 up:
 	docker-compose up -d
 

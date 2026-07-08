@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +41,7 @@ class GamePollerTest {
         var liveState = spy(new LiveState(GAME_PK, null, -1));
         var poller = new GamePoller(GAME_PK, liveState, feedClient, producer, scheduler);
 
-        Map<String, Object> liveFeed = buildFeed("Live", "20260704_175655", 10);
+        MlbFeedResponse liveFeed = buildFeed("Live", "20260704_175655", 10);
         when(feedClient.fetch(eq(GAME_PK), isNull())).thenReturn(liveFeed);
 
         poller.start();
@@ -61,7 +60,7 @@ class GamePollerTest {
         var liveState = new LiveState(GAME_PK, "20260704_170000", -1);
         var poller = new GamePoller(GAME_PK, liveState, feedClient, producer, scheduler);
 
-        Map<String, Object> finalFeed = buildFeed("Final", "20260704_220000", 10);
+        MlbFeedResponse finalFeed = buildFeed("Final", "20260704_220000", 10);
         when(feedClient.fetch(eq(GAME_PK), eq("20260704_170000"))).thenReturn(finalFeed);
 
         poller.start();
@@ -81,7 +80,7 @@ class GamePollerTest {
         var previewState = new PreviewState(GAME_PK);
         var poller = new GamePoller(GAME_PK, previewState, feedClient, producer, scheduler);
 
-        Map<String, Object> previewFeed = buildFeed("Preview", "20260704_150000", 60);
+        MlbFeedResponse previewFeed = buildFeed("Preview", "20260704_150000", 60);
         when(feedClient.fetch(eq(GAME_PK), isNull())).thenReturn(previewFeed);
 
         poller.start();
@@ -98,7 +97,7 @@ class GamePollerTest {
         var previewState = new PreviewState(GAME_PK);
         var poller = new GamePoller(GAME_PK, previewState, feedClient, producer, scheduler);
 
-        Map<String, Object> liveFeed = buildFeed("Live", "20260704_175655", 10);
+        MlbFeedResponse liveFeed = buildFeed("Live", "20260704_175655", 10);
         when(feedClient.fetch(eq(GAME_PK), isNull())).thenReturn(liveFeed);
 
         poller.start();
@@ -114,25 +113,21 @@ class GamePollerTest {
                 eq(10L), eq(10L), eq(TimeUnit.SECONDS));
     }
 
-    // helper: builds a minimal feed Map matching what our state machine reads
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> buildFeed(String abstractGameState, String timestamp, int wait) {
-        return Map.of(
-                "gameData", Map.of(
-                        "status", Map.of("abstractGameState", abstractGameState),
-                        "game", Map.of("pk", GAME_PK),
-                        "datetime", Map.of("officialDate", "2026-07-04"),
-                        "teams", Map.of(
-                                "home", Map.of("id", 111, "name", "Boston Red Sox"),
-                                "away", Map.of("id", 147, "name", "New York Yankees")
+    // helper: builds a minimal MlbFeedResponse matching what the state machine reads
+    private MlbFeedResponse buildFeed(String abstractGameState, String timestamp, int wait) {
+        return new MlbFeedResponse(
+                new MlbFeedResponse.MetaData(timestamp, wait),
+                new MlbFeedResponse.GameData(
+                        new MlbFeedResponse.GameData.Game(GAME_PK),
+                        new MlbFeedResponse.GameData.Datetime("2026-07-04"),
+                        new MlbFeedResponse.GameData.Status(abstractGameState),
+                        new MlbFeedResponse.GameData.Teams(
+                                new MlbFeedResponse.GameData.Teams.Team(111, "Boston Red Sox"),
+                                new MlbFeedResponse.GameData.Teams.Team(147, "New York Yankees")
                         )
                 ),
-                "metaData", Map.of(
-                        "timeStamp", timestamp,
-                        "wait", wait
-                ),
-                "liveData", Map.of(
-                        "plays", Map.of("allPlays", List.of())
+                new MlbFeedResponse.LiveData(
+                        new MlbFeedResponse.LiveData.Plays(List.of())
                 )
         );
     }

@@ -3,8 +3,6 @@ package com.stochasticsports.listener.feed;
 import com.stochasticsports.listener.event.EventProducer;
 
 import java.time.Duration;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * A game currently in progress. Polls every metaData.wait seconds (or 10s default).
@@ -20,12 +18,8 @@ public record LiveState(int gamePk, String lastTimecode, int lastAtBatIndex) imp
     /**
      * Returns the poll interval derived from the feed's metaData.wait, defaulting to 10s.
      */
-    @SuppressWarnings("unchecked")
-    public Duration pollIntervalFromFeed(Map<String, Object> feed) {
-        return Optional.ofNullable((Map<String, Object>) feed.get("metaData"))
-                .map(meta -> (Number) meta.get("wait"))
-                .map(wait -> Duration.ofSeconds(wait.longValue()))
-                .orElse(Duration.ofSeconds(10));
+    public Duration pollIntervalFromFeed(MlbFeedResponse feed) {
+        return Duration.ofSeconds(feed.metaData().waitSeconds() > 0 ? feed.metaData().waitSeconds() : 10);
     }
 
     @Override
@@ -34,21 +28,18 @@ public record LiveState(int gamePk, String lastTimecode, int lastAtBatIndex) imp
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public MlbGameState transition(Map<String, Object> feed) {
-        var gameData = (Map<String, Object>) feed.get("gameData");
-        var status   = (Map<String, Object>) gameData.get("status");
-        var state    = (String) status.get("abstractGameState");
-        var newCode  = timecodeFrom(feed);
-
-        return switch (state) {
+    public MlbGameState transition(MlbFeedResponse feed) {
+        return switch (feed.gameData().status().abstractGameState()) {
             case "Final" -> new FinalState(gamePk);
-            default      -> new LiveState(gamePk, newCode, lastAtBatIndex);
+            default      -> new LiveState(gamePk, feed.metaData().timeStamp(), lastAtBatIndex);
         };
     }
 
-    @Override
-    public int emitEvents(Map<String, Object> feed, EventProducer producer) {
+    /**
+     * Emits normalized events from the feed to the producer.
+     * Returns the new max atBatIndex after emission.
+     */
+    public int emit(MlbFeedResponse feed, EventProducer producer) {
         var events = Normalizer.normalize(feed, lastAtBatIndex);
         events.forEach(producer::send);
         return events.stream()
@@ -57,9 +48,8 @@ public record LiveState(int gamePk, String lastTimecode, int lastAtBatIndex) imp
                 .orElse(lastAtBatIndex);
     }
 
-    @SuppressWarnings("unchecked")
-    private String timecodeFrom(Map<String, Object> feed) {
-        var meta = (Map<String, Object>) feed.get("metaData");
-        return (String) meta.get("timeStamp");
+    /** Returns a new LiveState with the given lastAtBatIndex, preserving other fields. */
+    public LiveState withLastAtBatIndex(int index) {
+        return new LiveState(gamePk, lastTimecode, index);
     }
 }

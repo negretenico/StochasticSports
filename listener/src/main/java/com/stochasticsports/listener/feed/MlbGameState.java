@@ -1,9 +1,6 @@
 package com.stochasticsports.listener.feed;
 
-import com.stochasticsports.listener.event.EventProducer;
-
 import java.time.Duration;
-import java.util.Map;
 
 /**
  * Sealed interface representing the state machine for a single MLB game.
@@ -26,14 +23,8 @@ public sealed interface MlbGameState permits PreviewState, LiveState, FinalState
     String lastTimecode();
 
     /**
-     * Computes the next state from the raw feed response.
+     * Computes the next state from the typed feed response.
      * Returns the same state instance (or updated version) based on abstractGameState.
      */
-    MlbGameState transition(Map<String, Object> feed);
-
-    /**
-     * Emits normalized events from the feed to the producer.
-     * Returns the new max atBatIndex after emission (unchanged in Preview/Final).
-     */
-    int emitEvents(Map<String, Object> feed, EventProducer producer);
+    MlbGameState transition(MlbFeedResponse feed);
 }
