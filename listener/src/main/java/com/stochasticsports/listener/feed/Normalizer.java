@@ -37,35 +37,33 @@ public final class Normalizer {
         var result  = play.result();
         var matchup = play.matchup();
 
-        return new NormalizedEvent(
-                gd.game().pk() + "_" + about.atBatIndex(),
-                gd.game().pk(),
-                new NormalizedEvent.GameInfo(
-                        gd.datetime().officialDate(),
-                        gd.teams().home().id(),
-                        gd.teams().home().name(),
-                        gd.teams().away().id(),
-                        gd.teams().away().name(),
-                        gd.status().abstractGameState(),
-                        about.inning(),
-                        about.halfInning(),
-                        play.count().outs()
-                ),
-                new NormalizedEvent.Score(result.homeScore(), result.awayScore()),
-                new NormalizedEvent.Matchup(
+        return NormalizedEvent.builder()
+                .eventId(gd.game().pk() + "_" + about.atBatIndex())
+                .gamePk(gd.game().pk())
+                .game(NormalizedEvent.GameInfo.builder()
+                        .gameDate(gd.datetime().officialDate())
+                        .homeTeamId(gd.teams().home().id())
+                        .homeTeamName(gd.teams().home().name())
+                        .awayTeamId(gd.teams().away().id())
+                        .awayTeamName(gd.teams().away().name())
+                        .abstractGameState(gd.status().abstractGameState())
+                        .inning(about.inning())
+                        .halfInning(about.halfInning())
+                        .outsWhenUp(play.count().outs())
+                        .build())
+                .score(new NormalizedEvent.Score(result.homeScore(), result.awayScore()))
+                .matchup(new NormalizedEvent.Matchup(
                         matchup.batter().id(),
                         matchup.batter().fullName(),
                         matchup.pitcher().id(),
-                        matchup.pitcher().fullName()
-                ),
-                new NormalizedEvent.AtBatResult(
+                        matchup.pitcher().fullName()))
+                .result(new NormalizedEvent.AtBatResult(
                         result.event(),
                         result.eventType(),
                         result.description(),
                         result.rbi(),
-                        result.isScoringPlay()
-                ),
-                ingestedAt
-        );
+                        result.isScoringPlay()))
+                .ingestedAt(ingestedAt)
+                .build();
     }
 }

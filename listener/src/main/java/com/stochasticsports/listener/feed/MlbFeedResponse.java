@@ -12,6 +12,12 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record MlbFeedResponse(MetaData metaData, GameData gameData, LiveData liveData) {
 
+    /** The timecode from metaData — used as the next poll's timecode parameter. */
+    public String timecode() { return metaData().timeStamp(); }
+
+    /** The current phase of the game: "Preview", "Live", or "Final". */
+    public String gamePhase() { return gameData().status().abstractGameState(); }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record MetaData(String timeStamp, @JsonProperty("wait") int waitSeconds) {}
 

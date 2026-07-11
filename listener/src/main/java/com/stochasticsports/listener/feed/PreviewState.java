@@ -1,6 +1,7 @@
 package com.stochasticsports.listener.feed;
 
 import java.time.Duration;
+import java.util.Optional;
 
 /**
  * A game that has not yet started. Polls every 60 seconds.
@@ -19,14 +20,14 @@ public record PreviewState(int gamePk) implements MlbGameState {
     }
 
     @Override
-    public String lastTimecode() {
-        return null;
+    public Optional<String> lastTimecode() {
+        return Optional.empty();
     }
 
     @Override
     public MlbGameState transition(MlbFeedResponse feed) {
-        return switch (feed.gameData().status().abstractGameState()) {
-            case "Live" -> new LiveState(gamePk, feed.metaData().timeStamp(), -1);
+        return switch (feed.gamePhase()) {
+            case "Live" -> new LiveState(gamePk, feed.timecode(), -1);
             default     -> this;
         };
     }

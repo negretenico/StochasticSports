@@ -2,6 +2,7 @@ package com.stochasticsports.listener.feed;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -37,8 +38,10 @@ public class FeedClient {
                 })
                 .retrieve()
                 .bodyToMono(MlbFeedResponse.class)
-                .retryWhen(Retry.backoff(3, Duration.ofSeconds(1)).maxBackoff(Duration.ofSeconds(60)))
-                .doOnError(e -> log.error("Failed to fetch feed for gamePk={}: {}", gamePk, e.getMessage()))
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(1)).maxBackoff(Duration.ofSeconds(60))
+                        .filter(e -> !(e instanceof WebClientResponseException wce) || wce.getStatusCode().is5xxServerError())
+                        .doBeforeRetry(signal -> log.warn("Retrying gamePk={} attempt={}: {}",
+                                gamePk, signal.totalRetries() + 1, signal.failure().getMessage())))
                 .block();
     }
 }

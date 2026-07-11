@@ -1,9 +1,12 @@
 package com.stochasticsports.listener.event;
 
+import lombok.Builder;
+
 /**
  * Immutable value representing a completed MLB at-bat event ready for Kafka production.
  * eventId is "{gamePk}_{atBatIndex}" — used for tracing only, not as a dedup key.
  */
+@Builder
 public record NormalizedEvent(
         String     eventId,
         int        gamePk,
@@ -13,6 +16,7 @@ public record NormalizedEvent(
         AtBatResult result,
         String     ingestedAt
 ) {
+    @Builder
     public record GameInfo(
             String gameDate,
             int    homeTeamId,

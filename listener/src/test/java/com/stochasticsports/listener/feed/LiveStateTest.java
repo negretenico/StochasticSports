@@ -20,7 +20,7 @@ class LiveStateTest {
 
         assertThat(next).isInstanceOf(LiveState.class);
         assertThat(next.gamePk()).isEqualTo(747175);
-        assertThat(((LiveState) next).lastTimecode()).isEqualTo("20260704_175655");
+        assertThat(((LiveState) next).lastTimecode()).contains("20260704_175655");
     }
 
     @Test

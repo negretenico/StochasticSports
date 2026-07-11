@@ -39,7 +39,7 @@ class GamePollerTest {
     @Test
     void poll_withLiveFeed_callsEmitEventsOnState() {
         var liveState = spy(new LiveState(GAME_PK, null, -1));
-        var poller = new GamePoller(GAME_PK, liveState, feedClient, producer, scheduler);
+        var poller = GamePoller.builder().initialState(liveState).feedClient(feedClient).producer(producer).scheduler(scheduler).build();
 
         MlbFeedResponse liveFeed = buildFeed("Live", "20260704_175655", 10);
         when(feedClient.fetch(eq(GAME_PK), isNull())).thenReturn(liveFeed);
@@ -58,7 +58,7 @@ class GamePollerTest {
     @Test
     void poll_withFinalFeed_cancelsFutureAndDoesNotReschedule() {
         var liveState = new LiveState(GAME_PK, "20260704_170000", -1);
-        var poller = new GamePoller(GAME_PK, liveState, feedClient, producer, scheduler);
+        var poller = GamePoller.builder().initialState(liveState).feedClient(feedClient).producer(producer).scheduler(scheduler).build();
 
         MlbFeedResponse finalFeed = buildFeed("Final", "20260704_220000", 10);
         when(feedClient.fetch(eq(GAME_PK), eq("20260704_170000"))).thenReturn(finalFeed);
@@ -78,7 +78,7 @@ class GamePollerTest {
     @Test
     void poll_withPreviewFeed_doesNotCallProducerAndStaysPreview() {
         var previewState = new PreviewState(GAME_PK);
-        var poller = new GamePoller(GAME_PK, previewState, feedClient, producer, scheduler);
+        var poller = GamePoller.builder().initialState(previewState).feedClient(feedClient).producer(producer).scheduler(scheduler).build();
 
         MlbFeedResponse previewFeed = buildFeed("Preview", "20260704_150000", 60);
         when(feedClient.fetch(eq(GAME_PK), isNull())).thenReturn(previewFeed);
@@ -95,7 +95,7 @@ class GamePollerTest {
     @Test
     void poll_transitionFromPreviewToLive_cancelsOldFutureAndReschedulesWithLiveInterval() {
         var previewState = new PreviewState(GAME_PK);
-        var poller = new GamePoller(GAME_PK, previewState, feedClient, producer, scheduler);
+        var poller = GamePoller.builder().initialState(previewState).feedClient(feedClient).producer(producer).scheduler(scheduler).build();
 
         MlbFeedResponse liveFeed = buildFeed("Live", "20260704_175655", 10);
         when(feedClient.fetch(eq(GAME_PK), isNull())).thenReturn(liveFeed);

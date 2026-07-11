@@ -22,6 +22,11 @@ public class GamePollerFactory {
     }
 
     public GamePoller create(int gamePk) {
-        return new GamePoller(gamePk, new PreviewState(gamePk), feedClient, producer, scheduler);
+        return GamePoller.builder()
+                .initialState(new PreviewState(gamePk))
+                .feedClient(feedClient)
+                .producer(producer)
+                .scheduler(scheduler)
+                .build();
     }
 }

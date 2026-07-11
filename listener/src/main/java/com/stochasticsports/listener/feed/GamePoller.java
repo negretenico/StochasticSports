@@ -1,8 +1,11 @@
 package com.stochasticsports.listener.feed;
 
 import com.stochasticsports.listener.event.EventProducer;
+import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -23,13 +26,13 @@ public class GamePoller {
     private MlbGameState currentState;
     private ScheduledFuture<?> future;
 
+    @Builder
     public GamePoller(
-            int gamePk,
             MlbGameState initialState,
             FeedClient feedClient,
             EventProducer producer,
             ScheduledExecutorService scheduler) {
-        this.gamePk       = gamePk;
+        this.gamePk       = initialState.gamePk();
         this.currentState = initialState;
         this.feedClient   = feedClient;
         this.producer     = producer;
@@ -44,46 +47,64 @@ public class GamePoller {
     }
 
     public void poll() {
-        try {
-            var feed = feedClient.fetch(gamePk, currentState.lastTimecode());
+        var feed = fetchFeed();
+        if (Objects.isNull(feed)) return;
+        advanceState(feed);
+    }
 
-            // Emit first using currentState so lastAtBatIndex is correct for dedup.
-            // Returns the new max atBatIndex after emission (or -1 for non-Live states).
+    private MlbFeedResponse fetchFeed() {
+        try {
+            return feedClient.fetch(gamePk, currentState.lastTimecode().orElse(null));
+        } catch (WebClientResponseException e) {
+            if (e.getStatusCode().is4xxClientError()) {
+                log.warn("No feed for gamePk={} ({}): game may not have started", gamePk, e.getStatusCode().value());
+            } else {
+                log.error("HTTP error polling gamePk={}: {}", gamePk, e.getMessage());
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("HTTP error polling gamePk={}: {}", gamePk, e.getMessage());
+            return null;
+        }
+    }
+
+    private void advanceState(MlbFeedResponse feed) {
+        try {
             int newLastAtBatIndex = switch (currentState) {
-                case LiveState ls -> ls.emit(feed, producer);
+                case LiveState ls  -> ls.emit(feed, producer);
                 case PreviewState p -> -1;
-                case FinalState f -> -1;
+                case FinalState f   -> -1;
             };
 
-            // Transition, then patch the updated atBatIndex into the next LiveState.
             var nextState = currentState.transition(feed);
             if (nextState instanceof LiveState ls) {
                 nextState = ls.withLastAtBatIndex(newLastAtBatIndex);
             }
 
-            boolean typeChanged = !nextState.getClass().equals(currentState.getClass());
-            if (typeChanged) {
-                future.cancel(false);
-
-                if (!nextState.isTerminal()) {
-                    long nextDelaySecs = nextState instanceof LiveState live
-                            ? live.pollIntervalFromFeed(feed).toSeconds()
-                            : nextState.pollInterval().toSeconds();
-                    future = scheduler.scheduleWithFixedDelay(
-                            this::poll, nextDelaySecs, nextDelaySecs, TimeUnit.SECONDS);
-                    log.info("Transitioned gamePk={} to {} interval={}s",
-                            gamePk, nextState.getClass().getSimpleName(), nextDelaySecs);
-                } else {
-                    log.info("Game gamePk={} reached Final state — poller stopped", gamePk);
-                }
-            }
-
+            rescheduleIfNeeded(nextState, feed);
             currentState = nextState;
 
-        } catch (org.springframework.web.reactive.function.client.WebClientException e) {
-            log.error("HTTP error polling gamePk={}: {}", gamePk, e.getMessage());
         } catch (RuntimeException e) {
             log.error("Poll error for gamePk={}: {}", gamePk, e.getMessage(), e);
         }
+    }
+
+    private void rescheduleIfNeeded(MlbGameState nextState, MlbFeedResponse feed) {
+        if (nextState.getClass().equals(currentState.getClass())) return;
+
+        future.cancel(false);
+
+        if (nextState.isTerminal()) {
+            log.info("Game gamePk={} reached Final state — poller stopped", gamePk);
+            return;
+        }
+
+        long delaySecs = switch (nextState) {
+            case LiveState live -> live.pollIntervalFromFeed(feed).toSeconds();
+            default             -> nextState.pollInterval().toSeconds();
+        };
+        future = scheduler.scheduleWithFixedDelay(this::poll, delaySecs, delaySecs, TimeUnit.SECONDS);
+        log.info("Transitioned gamePk={} to {} interval={}s",
+                gamePk, nextState.getClass().getSimpleName(), delaySecs);
     }
 }

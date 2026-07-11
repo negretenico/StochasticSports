@@ -3,12 +3,18 @@ package com.stochasticsports.listener.feed;
 import com.stochasticsports.listener.event.EventProducer;
 
 import java.time.Duration;
+import java.util.Optional;
 
 /**
  * A game currently in progress. Polls every metaData.wait seconds (or 10s default).
  * Emits normalized at-bat-complete events. Transitions to FinalState when feed reports "Final".
  */
-public record LiveState(int gamePk, String lastTimecode, int lastAtBatIndex) implements MlbGameState {
+public record LiveState(int gamePk, String timecode, int lastAtBatIndex) implements MlbGameState {
+
+    @Override
+    public Optional<String> lastTimecode() {
+        return Optional.ofNullable(timecode);
+    }
 
     @Override
     public Duration pollInterval() {
@@ -29,9 +35,9 @@ public record LiveState(int gamePk, String lastTimecode, int lastAtBatIndex) imp
 
     @Override
     public MlbGameState transition(MlbFeedResponse feed) {
-        return switch (feed.gameData().status().abstractGameState()) {
+        return switch (feed.gamePhase()) {
             case "Final" -> new FinalState(gamePk);
-            default      -> new LiveState(gamePk, feed.metaData().timeStamp(), lastAtBatIndex);
+            default      -> new LiveState(gamePk, feed.timecode(), lastAtBatIndex);
         };
     }
 
@@ -50,6 +56,6 @@ public record LiveState(int gamePk, String lastTimecode, int lastAtBatIndex) imp
 
     /** Returns a new LiveState with the given lastAtBatIndex, preserving other fields. */
     public LiveState withLastAtBatIndex(int index) {
-        return new LiveState(gamePk, lastTimecode, index);
+        return new LiveState(gamePk, timecode, index);
     }
 }

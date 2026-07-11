@@ -1,6 +1,7 @@
 package com.stochasticsports.listener.feed;
 
 import java.time.Duration;
+import java.util.Optional;
 
 /**
  * A completed game. Terminal state — never re-scheduled.
@@ -18,8 +19,8 @@ public record FinalState(int gamePk) implements MlbGameState {
     }
 
     @Override
-    public String lastTimecode() {
-        return null;
+    public Optional<String> lastTimecode() {
+        return Optional.empty();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.stochasticsports.listener.feed;
 
 import java.time.Duration;
+import java.util.Optional;
 
 /**
  * Sealed interface representing the state machine for a single MLB game.
@@ -18,9 +19,9 @@ public sealed interface MlbGameState permits PreviewState, LiveState, FinalState
 
     /**
      * Returns the last timecode used in this state's feed fetch,
-     * or null if not applicable (Preview).
+     * or empty if not applicable (Preview, Final).
      */
-    String lastTimecode();
+    Optional<String> lastTimecode();
 
     /**
      * Computes the next state from the typed feed response.

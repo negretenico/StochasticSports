@@ -45,8 +45,8 @@ class PreviewStateTest {
     }
 
     @Test
-    void lastTimecode_isNull() {
-        assertThat(new PreviewState(747175).lastTimecode()).isNull();
+    void lastTimecode_isEmpty() {
+        assertThat(new PreviewState(747175).lastTimecode()).isEmpty();
     }
 
     // helper

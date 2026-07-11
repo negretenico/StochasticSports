@@ -2,10 +2,10 @@ package com.stochasticsports.listener.config;
 
 import com.stochasticsports.listener.feed.FeedClient;
 import com.stochasticsports.listener.feed.GamePollerFactory;
+import com.stochasticsports.listener.game.DiscoveryRunner;
 import com.stochasticsports.listener.game.GameDiscoveryService;
 import com.stochasticsports.listener.game.GameScheduleClient;
 import com.stochasticsports.listener.event.EventProducer;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +13,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Main wiring configuration for the listener module.
@@ -62,22 +61,11 @@ public class ListenerConfig {
         return new GameDiscoveryService(scheduleClient, gamePollerFactory, props);
     }
 
-    /**
-     * Runs discovery immediately on startup, then re-schedules every discoveryIntervalSeconds.
-     * Keeps @Scheduled out of domain classes.
-     */
     @Bean
-    public ApplicationRunner discoveryRunner(
+    public DiscoveryRunner discoveryRunner(
             GameDiscoveryService gameDiscoveryService,
             ScheduledExecutorService gamePollerScheduler,
             ListenerProperties props) {
-        return args -> {
-            gameDiscoveryService.discoverAndRegister();
-            gamePollerScheduler.scheduleWithFixedDelay(
-                    gameDiscoveryService::discoverAndRegister,
-                    props.discoveryIntervalSeconds(),
-                    props.discoveryIntervalSeconds(),
-                    TimeUnit.SECONDS);
-        };
+        return new DiscoveryRunner(gameDiscoveryService, gamePollerScheduler, props.discoveryIntervalSeconds());
     }
 }
