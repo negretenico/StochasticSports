@@ -116,3 +116,44 @@ try {
 ```
 
 If multiple operations can each fail independently, give each its own try block with its own catch. Do not batch unrelated risky calls under one catch.
+
+## Functional Interfaces Over Static Methods
+
+Never put behavior in `static` methods on utility classes. Static methods cannot be injected, swapped, or tested in isolation.
+
+Express behavior as `Function`, `BiFunction`, `Supplier`, or `Consumer` — implemented as classes, wired as Spring `@Bean`s, and received via constructor injection.
+
+```java
+// banned — static utility, hidden coupling, not injectable
+public final class Normalizer {
+    public static List<Event> normalize(Feed feed, int index) { ... }
+}
+
+// required — implements BiFunction, wired as a @Bean
+public final class Normalizer implements BiFunction<Feed, Integer, List<Event>> {
+    @Override
+    public List<Event> apply(Feed feed, Integer index) { ... }
+}
+
+// in Spring config
+@Bean
+public BiFunction<Feed, Integer, List<Event>> normalizer() {
+    return new Normalizer();
+}
+
+// in caller — constructor-injected, swappable in tests
+public class GamePoller {
+    private final BiFunction<Feed, Integer, List<Event>> normalizer;
+}
+```
+
+Pick the right interface by role:
+
+| Interface | Use when |
+|---|---|
+| `Function<A, B>` | transform one value to another |
+| `BiFunction<A, B, C>` | combine two inputs into a result |
+| `Supplier<T>` | produce a value lazily (no input) |
+| `Consumer<T>` | side-effecting action on a value (e.g. send, log) |
+
+`static` is only permitted on record factory methods (e.g. `Result.success(...)`). All other `static` usage is banned.
