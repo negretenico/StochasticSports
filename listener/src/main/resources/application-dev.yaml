@@ -1,0 +1,10 @@
+listener:
+  mlb-api-base-url: https://statsapi.mlb.com/api/v1
+  poll-date: ""
+  discovery-interval-seconds: 300
+  default-live-poll-seconds: 10
+  preview-poll-seconds: 60
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9093

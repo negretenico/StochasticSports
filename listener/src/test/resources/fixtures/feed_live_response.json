@@ -1,0 +1,275 @@
+{
+  "metaData": {
+    "timeStamp": "20260704_175655",
+    "gameEvents": ["play"],
+    "logicalEvents": ["advancedBallData"],
+    "wait": 10
+  },
+  "gameData": {
+    "game": {
+      "pk": 747175,
+      "type": "R",
+      "doubleHeader": "N",
+      "id": "2026/07/04/nyamlb-bosmlb-1",
+      "gamedayType": "P",
+      "tiebreaker": "N",
+      "gameNumber": 1,
+      "calendarEventID": "14-747175-2026-07-04",
+      "season": "2026",
+      "seasonDisplay": "2026"
+    },
+    "datetime": {
+      "dateTime": "2026-07-04T17:10:00Z",
+      "originalDate": "2026-07-04",
+      "officialDate": "2026-07-04",
+      "dayNight": "day",
+      "time": "1:10",
+      "ampm": "PM"
+    },
+    "status": {
+      "abstractGameState": "Live",
+      "codedGameState": "I",
+      "detailedState": "In Progress",
+      "statusCode": "I",
+      "startTimeTBD": false,
+      "abstractGameCode": "L"
+    },
+    "teams": {
+      "away": {
+        "id": 147,
+        "name": "New York Yankees",
+        "link": "/api/v1/teams/147",
+        "season": 2026,
+        "venue": {
+          "id": 3313,
+          "name": "Yankee Stadium",
+          "link": "/api/v1/venues/3313"
+        },
+        "teamCode": "nya",
+        "fileCode": "nyy",
+        "abbreviation": "NYY",
+        "teamName": "Yankees",
+        "locationName": "Bronx",
+        "shortName": "NY Yankees"
+      },
+      "home": {
+        "id": 111,
+        "name": "Boston Red Sox",
+        "link": "/api/v1/teams/111",
+        "season": 2026,
+        "venue": {
+          "id": 3,
+          "name": "Fenway Park",
+          "link": "/api/v1/venues/3"
+        },
+        "teamCode": "bos",
+        "fileCode": "bos",
+        "abbreviation": "BOS",
+        "teamName": "Red Sox",
+        "locationName": "Boston",
+        "shortName": "Boston"
+      }
+    }
+  },
+  "liveData": {
+    "plays": {
+      "allPlays": [
+        {
+          "result": {
+            "type": "atBat",
+            "event": "Single",
+            "eventType": "single",
+            "description": "Aaron Judge singles on a line drive to left fielder Masataka Yoshida.",
+            "rbi": 0,
+            "awayScore": 0,
+            "homeScore": 0,
+            "isScoringPlay": false
+          },
+          "about": {
+            "atBatIndex": 0,
+            "halfInning": "top",
+            "isTopInning": true,
+            "inning": 1,
+            "startTime": "2026-07-04T17:14:23.000Z",
+            "endTime": "2026-07-04T17:17:05.000Z",
+            "isComplete": true,
+            "isScoringPlay": false,
+            "hasReview": false,
+            "hasOut": false,
+            "captivatingIndex": 14
+          },
+          "count": {
+            "balls": 1,
+            "strikes": 2,
+            "outs": 0
+          },
+          "matchup": {
+            "batter": {
+              "id": 592450,
+              "fullName": "Aaron Judge",
+              "link": "/api/v1/people/592450"
+            },
+            "batSide": {
+              "code": "R",
+              "description": "Right"
+            },
+            "pitcher": {
+              "id": 641154,
+              "fullName": "Brayan Bello",
+              "link": "/api/v1/people/641154"
+            },
+            "pitchHand": {
+              "code": "R",
+              "description": "Right"
+            }
+          },
+          "pitchIndex": [0, 1, 2, 3],
+          "actionIndex": [],
+          "runnerIndex": [0],
+          "runners": [
+            {
+              "movement": {
+                "originBase": null,
+                "start": null,
+                "end": "1B",
+                "outBase": null,
+                "isOut": false,
+                "outNumber": null
+              },
+              "details": {
+                "event": "Single",
+                "eventType": "single",
+                "movementReason": null,
+                "runner": {
+                  "id": 592450,
+                  "fullName": "Aaron Judge",
+                  "link": "/api/v1/people/592450"
+                },
+                "responsiblePitcher": null,
+                "isScoringEvent": false,
+                "rbi": false,
+                "earned": false,
+                "teamUnearned": false,
+                "playIndex": 3
+              }
+            }
+          ],
+          "playEvents": []
+        },
+        {
+          "result": {
+            "type": "atBat",
+            "event": "Home Run",
+            "eventType": "home_run",
+            "description": "Giancarlo Stanton homers (12) on a fly ball to left center field. Aaron Judge scores.",
+            "rbi": 2,
+            "awayScore": 2,
+            "homeScore": 0,
+            "isScoringPlay": true
+          },
+          "about": {
+            "atBatIndex": 1,
+            "halfInning": "top",
+            "isTopInning": true,
+            "inning": 1,
+            "startTime": "2026-07-04T17:18:10.000Z",
+            "endTime": "2026-07-04T17:21:33.000Z",
+            "isComplete": true,
+            "isScoringPlay": true,
+            "hasReview": false,
+            "hasOut": false,
+            "captivatingIndex": 83
+          },
+          "count": {
+            "balls": 2,
+            "strikes": 1,
+            "outs": 0
+          },
+          "matchup": {
+            "batter": {
+              "id": 519317,
+              "fullName": "Giancarlo Stanton",
+              "link": "/api/v1/people/519317"
+            },
+            "batSide": {
+              "code": "R",
+              "description": "Right"
+            },
+            "pitcher": {
+              "id": 641154,
+              "fullName": "Brayan Bello",
+              "link": "/api/v1/people/641154"
+            },
+            "pitchHand": {
+              "code": "R",
+              "description": "Right"
+            }
+          },
+          "pitchIndex": [0, 1, 2, 3],
+          "actionIndex": [],
+          "runnerIndex": [0, 1],
+          "runners": [],
+          "playEvents": []
+        }
+      ],
+      "currentPlay": {
+        "result": {
+          "type": "atBat",
+          "event": "Home Run",
+          "eventType": "home_run",
+          "description": "Giancarlo Stanton homers (12) on a fly ball to left center field. Aaron Judge scores.",
+          "rbi": 2,
+          "awayScore": 2,
+          "homeScore": 0,
+          "isScoringPlay": true
+        },
+        "about": {
+          "atBatIndex": 1,
+          "halfInning": "top",
+          "isTopInning": true,
+          "inning": 1,
+          "isComplete": true,
+          "isScoringPlay": true
+        }
+      },
+      "scoringPlays": [1],
+      "playsByInning": [
+        {
+          "startIndex": 0,
+          "endIndex": 1,
+          "top": [0, 1],
+          "bottom": [],
+          "hits": {
+            "away": [],
+            "home": []
+          }
+        }
+      ]
+    },
+    "linescore": {
+      "currentInning": 1,
+      "currentInningOrdinal": "1st",
+      "inningState": "Top",
+      "inningHalf": "Top",
+      "isTopInning": true,
+      "scheduledInnings": 9,
+      "innings": [],
+      "teams": {
+        "home": {
+          "runs": 0,
+          "hits": 0,
+          "errors": 0,
+          "leftOnBase": 0
+        },
+        "away": {
+          "runs": 2,
+          "hits": 2,
+          "errors": 0,
+          "leftOnBase": 0
+        }
+      },
+      "defense": {},
+      "offense": {}
+    }
+  }
+}

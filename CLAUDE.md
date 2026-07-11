@@ -48,8 +48,8 @@ Articles in `docs/articles/` inform the modeling approach:
 ## Languages
 
 This is a polyglot project:
-- **Java / Spring Boot** — services requiring low latency or strong typing (Kafka consumers, risk/execution layer)
-- **Python** — data ingestion, analytics, and modeling (MLB Stats API polling, Elo ratings, arbitrage detection)
+- **Java / Spring Boot** — all services (listener/ingestion, Kafka producing, risk/execution layer). The listener service polls the MLB Stats API and produces to Kafka — this is Java, not Python.
+- **Python** — analytics and modeling only (Elo ratings, arbitrage detection, win probability). No ingestion services in Python.
 
 ## Coding Conventions
 

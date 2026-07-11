@@ -1,0 +1,22 @@
+listener:
+  mlb-api-base-url: https://statsapi.mlb.com/api/v1
+  poll-date: ""            # empty = today; override for testing
+  discovery-interval-seconds: 300
+  default-live-poll-seconds: 10
+  preview-poll-seconds: 60
+
+kafka:
+  topic:
+    name: mlb
+    partitions: 16
+    replicas: 1
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9093
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+        acks: all
