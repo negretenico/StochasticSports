@@ -5,6 +5,12 @@ listener:
   default-live-poll-seconds: 10
   preview-poll-seconds: 60
 
+kafka:
+  topic:
+    name: mlb
+    partitions: 16
+    replicas: 1
+
 spring:
   kafka:
     bootstrap-servers: ${spring.embedded.kafka.brokers}

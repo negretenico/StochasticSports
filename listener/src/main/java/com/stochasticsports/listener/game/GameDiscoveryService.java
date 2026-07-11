@@ -5,6 +5,7 @@ import com.stochasticsports.listener.feed.GamePollerFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,9 +46,8 @@ public class GameDiscoveryService {
     }
 
     private String resolveDate() {
-        var configured = props.pollDate();
-        return (configured == null || configured.isBlank())
-                ? LocalDate.now().toString()
-                : configured;
+        return Optional.ofNullable(props.pollDate())
+                .filter(s -> !s.isBlank())
+                .orElse(LocalDate.now().toString());
     }
 }

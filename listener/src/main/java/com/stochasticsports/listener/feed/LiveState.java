@@ -1,9 +1,12 @@
 package com.stochasticsports.listener.feed;
 
 import com.stochasticsports.listener.event.EventProducer;
+import com.stochasticsports.listener.event.NormalizedEvent;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 /**
  * A game currently in progress. Polls every metaData.wait seconds (or 10s default).
@@ -45,8 +48,9 @@ public record LiveState(int gamePk, String timecode, int lastAtBatIndex) impleme
      * Emits normalized events from the feed to the producer.
      * Returns the new max atBatIndex after emission.
      */
-    public int emit(MlbFeedResponse feed, EventProducer producer) {
-        var events = Normalizer.normalize(feed, lastAtBatIndex);
+    public int emit(MlbFeedResponse feed, EventProducer producer,
+                    BiFunction<MlbFeedResponse, Integer, List<NormalizedEvent>> normalizer) {
+        var events = normalizer.apply(feed, lastAtBatIndex);
         events.forEach(producer::send);
         return events.stream()
                 .mapToInt(e -> Integer.parseInt(e.eventId().substring(e.eventId().lastIndexOf('_') + 1)))

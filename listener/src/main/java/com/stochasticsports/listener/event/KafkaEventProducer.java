@@ -7,23 +7,23 @@ import java.util.Objects;
 
 /**
  * Kafka adapter implementing the EventProducer port.
- * Topic: "mlb". Key: gamePk as String.
+ * Topic name and key (gamePk as String) are supplied at construction time.
  */
 @Slf4j
 public class KafkaEventProducer implements EventProducer {
 
-    static final String TOPIC = "mlb";
-
     private final KafkaTemplate<String, NormalizedEvent> kafkaTemplate;
+    private final String topic;
 
-    public KafkaEventProducer(KafkaTemplate<String, NormalizedEvent> kafkaTemplate) {
+    public KafkaEventProducer(KafkaTemplate<String, NormalizedEvent> kafkaTemplate, String topic) {
         this.kafkaTemplate = kafkaTemplate;
+        this.topic = topic;
     }
 
     @Override
     public void send(NormalizedEvent event) {
         var key = String.valueOf(event.gamePk());
-        kafkaTemplate.send(TOPIC, key, event)
+        kafkaTemplate.send(topic, key, event)
                 .whenComplete((result, ex) -> {
                     if (Objects.isNull(ex)) {
                         log.debug("Sent event eventId={} partition={}",

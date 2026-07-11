@@ -4,21 +4,17 @@ import com.stochasticsports.listener.event.NormalizedEvent;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
- * Pure function: typed MlbFeedResponse -> List<NormalizedEvent>.
- * No Spring dependencies. Only emits completed at-bats with atBatIndex > lastAtBatIndex.
+ * Pure function: MlbFeedResponse × lastAtBatIndex → List<NormalizedEvent>.
+ * Exposed as a BiFunction so it can be passed, composed, or replaced in tests.
+ * Only emits completed at-bats with atBatIndex > lastAtBatIndex.
  */
-public final class Normalizer {
+public final class Normalizer implements BiFunction<MlbFeedResponse, Integer, List<NormalizedEvent>> {
 
-    private Normalizer() {}
-
-    /**
-     * @param feed           Typed feed response from MLB Stats API /game/{pk}/feed/live
-     * @param lastAtBatIndex Highest at-bat index already emitted (-1 to emit all)
-     * @return Normalized events for at-bats with index strictly greater than lastAtBatIndex
-     */
-    public static List<NormalizedEvent> normalize(MlbFeedResponse feed, int lastAtBatIndex) {
+    @Override
+    public List<NormalizedEvent> apply(MlbFeedResponse feed, Integer lastAtBatIndex) {
         var gd         = feed.gameData();
         var ingestedAt = Instant.now().toString();
 
@@ -28,7 +24,7 @@ public final class Normalizer {
                 .toList();
     }
 
-    private static NormalizedEvent toEvent(
+    private NormalizedEvent toEvent(
             MlbFeedResponse.LiveData.Play play,
             MlbFeedResponse.GameData gd,
             String ingestedAt) {

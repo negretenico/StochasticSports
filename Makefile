@@ -18,3 +18,9 @@ run-listener-dev:
 
 logs:
 	docker-compose logs -f
+
+logs-listener:
+	docker-compose logs -f listener
+
+logs-kafka:
+	docker-compose logs -f kafka

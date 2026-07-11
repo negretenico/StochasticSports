@@ -1,14 +1,17 @@
 package com.stochasticsports.listener.feed;
 
 import com.stochasticsports.listener.event.EventProducer;
+import com.stochasticsports.listener.event.NormalizedEvent;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 /**
  * Drives the poll loop for a single MLB game.
@@ -22,6 +25,7 @@ public class GamePoller {
     private final FeedClient feedClient;
     private final EventProducer producer;
     private final ScheduledExecutorService scheduler;
+    private final BiFunction<MlbFeedResponse, Integer, List<NormalizedEvent>> normalizer;
 
     private MlbGameState currentState;
     private ScheduledFuture<?> future;
@@ -31,12 +35,14 @@ public class GamePoller {
             MlbGameState initialState,
             FeedClient feedClient,
             EventProducer producer,
-            ScheduledExecutorService scheduler) {
+            ScheduledExecutorService scheduler,
+            BiFunction<MlbFeedResponse, Integer, List<NormalizedEvent>> normalizer) {
         this.gamePk       = initialState.gamePk();
         this.currentState = initialState;
         this.feedClient   = feedClient;
         this.producer     = producer;
         this.scheduler    = scheduler;
+        this.normalizer   = normalizer;
     }
 
     public void start() {
@@ -58,9 +64,9 @@ public class GamePoller {
         } catch (WebClientResponseException e) {
             if (e.getStatusCode().is4xxClientError()) {
                 log.warn("No feed for gamePk={} ({}): game may not have started", gamePk, e.getStatusCode().value());
-            } else {
-                log.error("HTTP error polling gamePk={}: {}", gamePk, e.getMessage());
+                return null;
             }
+            log.error("HTTP error polling gamePk={}: {}", gamePk, e.getMessage());
             return null;
         } catch (Exception e) {
             log.error("HTTP error polling gamePk={}: {}", gamePk, e.getMessage());
@@ -69,24 +75,27 @@ public class GamePoller {
     }
 
     private void advanceState(MlbFeedResponse feed) {
+        int newLastAtBatIndex = emitEvents(feed);
+        var nextState = computeNextState(feed, newLastAtBatIndex);
+        rescheduleIfNeeded(nextState, feed);
+        currentState = nextState;
+    }
+
+    private int emitEvents(MlbFeedResponse feed) {
         try {
-            int newLastAtBatIndex = switch (currentState) {
-                case LiveState ls  -> ls.emit(feed, producer);
-                case PreviewState p -> -1;
-                case FinalState f   -> -1;
+            return switch (currentState) {
+                case LiveState ls -> ls.emit(feed, producer, normalizer);
+                default           -> -1;
             };
-
-            var nextState = currentState.transition(feed);
-            if (nextState instanceof LiveState ls) {
-                nextState = ls.withLastAtBatIndex(newLastAtBatIndex);
-            }
-
-            rescheduleIfNeeded(nextState, feed);
-            currentState = nextState;
-
         } catch (RuntimeException e) {
-            log.error("Poll error for gamePk={}: {}", gamePk, e.getMessage(), e);
+            log.error("Emit error for gamePk={}: {}", gamePk, e.getMessage(), e);
+            return -1;
         }
+    }
+
+    private MlbGameState computeNextState(MlbFeedResponse feed, int newLastAtBatIndex) {
+        var nextState = currentState.transition(feed);
+        return nextState instanceof LiveState ls ? ls.withLastAtBatIndex(newLastAtBatIndex) : nextState;
     }
 
     private void rescheduleIfNeeded(MlbGameState nextState, MlbFeedResponse feed) {

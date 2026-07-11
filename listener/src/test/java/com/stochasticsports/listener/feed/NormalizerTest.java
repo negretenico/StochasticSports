@@ -80,11 +80,11 @@ class NormalizerTest {
         assertThat(event.result().isScoringPlay()).isFalse();
     }
 
-    // ── Cycle 5: Normalizer.normalize(feed, -1) returns events from fixture ──
+    // ── Cycle 5: new Normalizer().apply(feed,-1) returns events from fixture ──
 
     @Test
     void normalize_withNoLastIndex_returnsAllCompletedAtBats() {
-        var events = Normalizer.normalize(feed, -1);
+        var events = new Normalizer().apply(feed,-1);
 
         assertThat(events).hasSize(2);
 
@@ -111,11 +111,11 @@ class NormalizerTest {
         assertThat(second.eventId()).isEqualTo("747175_1");
     }
 
-    // ── Cycle 6: Normalizer.normalize(feed, N) excludes at-bats where atBatIndex <= N ──
+    // ── Cycle 6: new Normalizer().apply(feed,N) excludes at-bats where atBatIndex <= N ──
 
     @Test
     void normalize_withLastAtBatIndex_excludesPreviouslySeen() {
-        List<NormalizedEvent> events = Normalizer.normalize(feed, 0);
+        List<NormalizedEvent> events = new Normalizer().apply(feed,0);
 
         // atBatIndex 0 was already seen — only index 1 should be returned
         assertThat(events).hasSize(1);
@@ -125,7 +125,7 @@ class NormalizerTest {
 
     @Test
     void normalize_withLastAtBatIndexAtMax_returnsEmpty() {
-        List<NormalizedEvent> events = Normalizer.normalize(feed, 1);
+        List<NormalizedEvent> events = new Normalizer().apply(feed,1);
 
         assertThat(events).isEmpty();
     }
